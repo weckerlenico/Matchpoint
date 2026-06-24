@@ -5,14 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Matchpoint – Testspiele finden</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css" />
 <style>
-  :root{--bg:#f4f6f9;--ink:#1e293b;--mut:#64748b;--bd:#e2e8f0;--brand:#1e3a5f;--accent:#2563eb;--card:#fff;}
+  :root{--bg:#f6f7f9;--ink:#1f2937;--mut:#6b7280;--bd:#e5e7eb;--brand:#27364b;--accent:#2f6db5;--card:#fff;}
   *{box-sizing:border-box;}
+  .ic{font-size:16px;line-height:1;vertical-align:-2px;}
+  .ic-lg{font-size:19px;line-height:1;vertical-align:-3px;}
   body{margin:0;font-family:'Inter',system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg);}
   .hd{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
     padding:14px 22px;background:var(--brand);color:#fff;}
   .hd-brand{display:flex;align-items:center;gap:12px;}
-  .hd-logo{font-size:26px;line-height:1;background:rgba(255,255,255,.12);width:42px;height:42px;
+  .hd-logo{font-size:22px;line-height:1;background:rgba(255,255,255,.12);width:42px;height:42px;
     display:flex;align-items:center;justify-content:center;border-radius:11px;}
   .hd-name{font-weight:700;font-size:19px;letter-spacing:-.02em;}
   .hd-sub{font-size:12.5px;color:#b9c7d8;}
@@ -54,7 +57,7 @@
   .card:hover,.card.on{border-color:var(--accent);box-shadow:0 4px 16px rgba(37,99,235,.12);transform:translateY(-1px);}
   .card-top{display:flex;align-items:center;gap:9px;}
   .card-top h3{margin:0;font-size:15.5px;font-weight:700;flex:1;letter-spacing:-.01em;}
-  .sport-badge{font-size:18px;}
+  .sport-badge{font-size:18px;color:var(--mut);display:inline-flex;align-items:center;}
   .venue-pill{background:#dcfce7;color:#15803d;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap;}
   .venue-pill.away{background:#fef3c7;color:#b45309;}
   .venue-pill.both{background:#e0e7ff;color:#4338ca;}
@@ -118,9 +121,9 @@
     box-shadow:0 4px 14px rgba(0,0,0,.1);transition:transform .15s,box-shadow .15s;}
   .ad:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.16);}
   .ad-inner{padding:18px 14px;min-height:230px;display:flex;flex-direction:column;justify-content:space-between;}
-  .ad-1{background:linear-gradient(150deg,#1e3a5f,#2563eb);}
-  .ad-2{background:linear-gradient(150deg,#0f766e,#14b8a6);}
-  .ad-3{background:linear-gradient(150deg,#b45309,#f59e0b);}
+  .ad-1{background:#27364b;}
+  .ad-2{background:#2f6db5;}
+  .ad-3{background:#3f5168;}
   .ad-kicker{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.85;}
   .ad-head{font-size:18px;font-weight:800;line-height:1.15;margin:8px 0;letter-spacing:-.01em;}
   .ad-body{font-size:12.5px;line-height:1.4;opacity:.92;}
@@ -169,7 +172,7 @@
 <body>
 <header class="hd">
   <div class="hd-brand">
-    <span class="hd-logo">⊕</span>
+    <span class="hd-logo"><i class="ti ti-calendar-event"></i></span>
     <div>
       <div class="hd-name">Matchpoint</div>
       <div class="hd-sub">Testspiele finden – einfach und unkompliziert</div>
@@ -189,9 +192,9 @@
         <label>Sportart</label>
         <div class="chips" id="fSport">
           <button class="chip on" data-v="alle">Alle</button>
-          <button class="chip" data-v="fussball">⚽ Fußball</button>
-          <button class="chip" data-v="handball">🤾 Handball</button>
-          <button class="chip" data-v="basketball">🏀 Basketball</button>
+          <button class="chip" data-v="fussball"><i class="ti ti-ball-football ic"></i> Fußball</button>
+          <button class="chip" data-v="handball"><i class="ti ti-ball-volleyball ic"></i> Handball</button>
+          <button class="chip" data-v="basketball"><i class="ti ti-ball-basketball ic"></i> Basketball</button>
         </div>
       </div>
       <div class="fld">
@@ -220,7 +223,7 @@
         <label>Mein Standort (PLZ)</label>
         <div class="dateadd">
           <input type="text" id="fZip" placeholder="z. B. 71093" inputmode="numeric" maxlength="5" />
-          <button type="button" class="addbtn" id="fZipBtn">📍 Markieren</button>
+          <button type="button" class="addbtn" id="fZipBtn"><i class="ti ti-map-pin ic"></i> Markieren</button>
         </div>
         <p class="hinttext" id="fZipHint" style="display:none"></p>
       </div>
@@ -257,9 +260,9 @@
       <div class="fld">
         <label>Sportart</label>
         <div class="chips" id="iSport">
-          <button class="chip on" data-v="fussball">⚽ Fußball</button>
-          <button class="chip" data-v="handball">🤾 Handball</button>
-          <button class="chip" data-v="basketball">🏀 Basketball</button>
+          <button class="chip on" data-v="fussball"><i class="ti ti-ball-football ic"></i> Fußball</button>
+          <button class="chip" data-v="handball"><i class="ti ti-ball-volleyball ic"></i> Handball</button>
+          <button class="chip" data-v="basketball"><i class="ti ti-ball-basketball ic"></i> Basketball</button>
         </div>
       </div>
 
@@ -285,9 +288,9 @@
       <div class="fld">
         <label>Spielort-Art</label>
         <div class="chips" id="iVenue">
-          <button class="chip on" data-v="heim">🏠 Heimspiel</button>
-          <button class="chip" data-v="auswaerts">✈️ Auswärtsspiel</button>
-          <button class="chip" data-v="beides">🔄 Beides möglich</button>
+          <button class="chip on" data-v="heim"><i class="ti ti-home ic"></i> Heimspiel</button>
+          <button class="chip" data-v="auswaerts"><i class="ti ti-plane ic"></i> Auswärtsspiel</button>
+          <button class="chip" data-v="beides"><i class="ti ti-arrows-left-right ic"></i> Beides möglich</button>
         </div>
       </div>
 
@@ -313,7 +316,7 @@
           <input id="i-zip" placeholder="PLZ" inputmode="numeric" />
           <input id="i-place" placeholder="Ort" />
         </div>
-        <button type="button" class="pickbtn" id="i-geocode" style="margin-top:8px">🔎 Adresse auf Karte zeigen</button>
+        <button type="button" class="pickbtn" id="i-geocode" style="margin-top:8px"><i class="ti ti-search ic"></i> Adresse auf Karte zeigen</button>
         <p class="hinttext" id="addr-tip">Tipp: Du kannst den Marker auch direkt per Klick auf die Karte setzen oder korrigieren.</p>
       </div>
 
@@ -385,7 +388,7 @@
     <div class="code-value" id="code-value"></div>
     <p class="code-hint">Auf diesem Gerät bleibt dein Gesuch automatisch bearbeitbar – der Code ist für andere Geräte oder einen Browserwechsel.</p>
     <button type="button" id="code-copy">Code kopieren</button>
-    <a id="code-mail" class="btn-link" style="display:none">📧 Code per Mail senden</a>
+    <a id="code-mail" class="btn-link" style="display:none"><i class="ti ti-mail ic"></i> Code per Mail senden</a>
     <button type="button" id="code-close" class="ghost">Schließen</button>
   </div>
 </div>
@@ -393,7 +396,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
 // ── Stammdaten ─────────────────────────────────────────
-const SPORTS = {fussball:{label:"Fußball",icon:"⚽"},handball:{label:"Handball",icon:"🤾"},basketball:{label:"Basketball",icon:"🏀"}};
+const SPORTS = {fussball:{label:"Fußball",icon:"ti-ball-football"},handball:{label:"Handball",icon:"ti-ball-volleyball"},basketball:{label:"Basketball",icon:"ti-ball-basketball"}};
 // sportabhängige Altersklassen
 const AGES = {
   fussball: ["F-Jugend","E-Jugend","D-Jugend","C-Jugend","B-Jugend","A-Jugend","Aktive"],
@@ -498,7 +501,7 @@ function drawHome(){
   if(homeMarker){ map.removeLayer(homeMarker); homeMarker=null; }
   if(radiusCircle){ map.removeLayer(radiusCircle); radiusCircle=null; }
   if(homePos){
-    homeMarker=L.marker([homePos.lat,homePos.lng],{title:"Mein Standort"}).addTo(map).bindPopup("📍 Mein Standort ("+esc(fZip)+")");
+    homeMarker=L.marker([homePos.lat,homePos.lng],{title:"Mein Standort"}).addTo(map).bindPopup("<i class='ti ti-map-pin'></i> Mein Standort ("+esc(fZip)+")");
     radiusCircle=L.circle([homePos.lat,homePos.lng],{radius:fRadius*1000,color:"#2563eb",weight:1,fillColor:"#2563eb",fillOpacity:0.06}).addTo(map);
   }
 }
@@ -509,7 +512,7 @@ function renderMarkers(items){
     const on=active===l.id;
     const m=L.circleMarker([l.lat,l.lng],{radius:on?12:8,color:on?"#1e3a5f":"#3b6ea5",weight:on?3:2,fillColor:on?"#2563eb":"#93b4d6",fillOpacity:0.9}).addTo(markerLayer);
     const addr=[l.street,[l.zip,l.place].filter(Boolean).join(" ")].filter(Boolean).join(", ");
-    m.bindPopup("<strong>"+esc(l.club)+"</strong><br>"+SPORTS[l.sport].icon+" "+esc(genderLabel(l.gender||"m"))+" · "+esc(l.age)+" · "+esc(l.league)+"<br>"+l.dates.map(fmtSlot).join("<br>")+"<br>"+esc(addr)+" · "+venueLabel(l.venue));
+    m.bindPopup("<strong>"+esc(l.club)+"</strong><br><i class='ti "+SPORTS[l.sport].icon+"'></i> "+esc(genderLabel(l.gender||"m"))+" · "+esc(l.age)+" · "+esc(l.league)+"<br>"+l.dates.map(fmtSlot).join("<br>")+"<br>"+esc(addr)+" · "+venueLabel(l.venue));
     m.on("click",()=>{ active=l.id; renderList(); });
     if(on) m.openPopup();
   });
@@ -553,7 +556,7 @@ function renderList(){
     el.className="card"+(active===l.id?" on":"");
     el.tabIndex=0;
     let html=
-      '<div class="card-top"><span class="sport-badge">'+SPORTS[l.sport].icon+'</span>'+
+      '<div class="card-top"><span class="sport-badge"><i class="ti '+SPORTS[l.sport].icon+'"></i></span>'+
       '<h3>'+esc(l.club)+'</h3>'+
       (l._dist!=null?'<span class="dist-pill">'+l._dist.toFixed(1).replace(".",",")+' km</span>':"")+
       '<span class="venue-pill'+vClass+'">'+venueLabel(l.venue)+'</span></div>'+
@@ -682,7 +685,7 @@ document.getElementById("fZip").oninput=(e)=>{ fZip=e.target.value.replace(/\D/g
 document.getElementById("fZipBtn").onclick=async ()=>{
   const hint=document.getElementById("fZipHint"), btn=document.getElementById("fZipBtn");
   if(!fZip||fZip.length<4){ hint.style.display=""; hint.textContent="Bitte eine gültige PLZ eingeben."; return; }
-  btn.disabled=true; const old=btn.textContent; btn.textContent="Suche…";
+  btn.disabled=true; btn.textContent="Suche…";
   try{
     const res=await geocode("",fZip,"");
     if(res){
@@ -693,7 +696,7 @@ document.getElementById("fZipBtn").onclick=async ()=>{
       renderList();
     } else { hint.style.display=""; hint.textContent="PLZ nicht gefunden."; }
   }catch{ hint.style.display=""; hint.textContent="Fehler bei der Standortsuche (Dienst evtl. blockiert)."; }
-  btn.disabled=false; btn.textContent=old;
+  btn.disabled=false; btn.innerHTML="<i class='ti ti-map-pin ic'></i> Markieren";
 };
 
 // ── Inserier-Formular ──────────────────────────────────
@@ -786,7 +789,7 @@ function resetForm(){
   dates=[]; pickPos=null;
   if(pickMarker){ map.removeLayer(pickMarker); pickMarker=null; }
   ["i-club","i-league","i-note","i-street","i-zip","i-place","i-name","i-email","i-phone","i-timefrom","i-timeto","i-dateinput"].forEach(id=>document.getElementById(id).value="");
-  document.getElementById("i-geocode").textContent="🔎 Adresse auf Karte zeigen";
+  document.getElementById("i-geocode").innerHTML="<i class='ti ti-search ic'></i> Adresse auf Karte zeigen";
   document.querySelectorAll("#iSport button").forEach((b,i)=>b.classList.toggle("on",i===0));
   document.querySelectorAll("#iGender button").forEach((b,i)=>b.classList.toggle("on",i===0));
   document.querySelectorAll("#iVenue button").forEach((b,i)=>b.classList.toggle("on",i===0));
