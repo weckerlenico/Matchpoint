@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Matchpoint – Testspiele finden</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+<style>
+  :root{--bg:#f4f6f9;--ink:#1e293b;--mut:#64748b;--bd:#e2e8f0;--brand:#1e3a5f;--accent:#2563eb;--card:#fff;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg);}
+  .hd{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:14px 22px;background:var(--brand);color:#fff;}
+  .hd-brand{display:flex;align-items:center;gap:12px;}
+  .hd-logo{font-size:26px;line-height:1;background:rgba(255,255,255,.12);width:42px;height:42px;
+    display:flex;align-items:center;justify-content:center;border-radius:11px;}
+  .hd-name{font-weight:700;font-size:19px;letter-spacing:-.02em;}
+  .hd-sub{font-size:12.5px;color:#b9c7d8;}
+  .hd-tabs{display:flex;gap:6px;background:rgba(0,0,0,.18);padding:4px;border-radius:11px;}
+  .hd-tabs button{border:0;background:transparent;color:#cbd5e1;font-weight:600;font-size:13.5px;
+    padding:8px 16px;border-radius:8px;cursor:pointer;}
+  .hd-tabs button.on{background:#fff;color:var(--brand);}
+  .hd-tabs button:focus-visible{outline:2px solid #fff;outline-offset:2px;}
+
+  .grid{display:grid;grid-template-columns:minmax(360px,440px) 1fr 210px;height:calc(100vh - 70px);}
+  .panel{overflow-y:auto;padding:20px;border-right:1px solid var(--bd);}
+  .fld{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .fld label{font-size:12px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;
+    display:flex;justify-content:space-between;align-items:center;}
+  .fld label em{font-style:normal;color:#dc2626;text-transform:none;letter-spacing:0;font-weight:500;}
+  .fld input,.fld select,.fld textarea{border:1px solid var(--bd);border-radius:9px;padding:9px 11px;
+    font-size:14px;font-family:inherit;background:#fff;color:var(--ink);width:100%;}
+  .fld input:focus,.fld select:focus,.fld textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent);}
+  .fld .err{border-color:#dc2626;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .chip{border:1px solid var(--bd);background:#fff;border-radius:99px;padding:7px 13px;font-size:13px;
+    cursor:pointer;font-weight:500;color:var(--ink);}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  .radiusrow{display:flex;align-items:center;gap:10px;}
+  .radiusrow input[type=range]{flex:1;accent-color:var(--accent);}
+  .radiusrow .val{font-size:13px;font-weight:700;color:var(--accent);min-width:54px;text-align:right;}
+  .sortrow{display:flex;align-items:center;gap:8px;margin:18px 0 10px;}
+  .sortrow label{font-size:12px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;}
+  .sortrow select{border:1px solid var(--bd);border-radius:8px;padding:6px 9px;font-size:13px;background:#fff;color:var(--ink);}
+  .count{font-size:13px;font-weight:600;color:var(--mut);margin-left:auto;}
+
+  .list{display:flex;flex-direction:column;gap:10px;}
+  .empty{padding:28px;text-align:center;color:var(--mut);border:1px dashed var(--bd);border-radius:11px;font-size:14px;line-height:1.5;}
+  .card{background:var(--card);border:1px solid var(--bd);border-radius:13px;padding:13px 15px;cursor:pointer;
+    transition:border-color .15s,box-shadow .15s,transform .15s;position:relative;}
+  .card:hover,.card.on{border-color:var(--accent);box-shadow:0 4px 16px rgba(37,99,235,.12);transform:translateY(-1px);}
+  .card-top{display:flex;align-items:center;gap:9px;}
+  .card-top h3{margin:0;font-size:15.5px;font-weight:700;flex:1;letter-spacing:-.01em;}
+  .sport-badge{font-size:18px;}
+  .venue-pill{background:#dcfce7;color:#15803d;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap;}
+  .venue-pill.away{background:#fef3c7;color:#b45309;}
+  .venue-pill.both{background:#e0e7ff;color:#4338ca;}
+  .dist-pill{background:#f1f5f9;color:var(--mut);font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap;}
+  .dates{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+  .date-pill{background:#eef2ff;color:var(--accent);font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap;}
+  .meta{display:flex;gap:7px;align-items:center;margin-top:6px;font-size:12.5px;color:var(--mut);flex-wrap:wrap;}
+  .meta i{color:var(--bd);font-style:normal;}
+  .note{margin:8px 0 0;font-size:13px;color:#475569;line-height:1.45;}
+  .contact{margin-top:9px;padding-top:9px;border-top:1px solid var(--bd);}
+  .contact .reveal{border:1px solid var(--bd);background:#f8fafc;color:var(--accent);border-radius:8px;
+    padding:7px 11px;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .contact .reveal:hover{background:#eef4fb;}
+  .contact-data{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12.5px;align-items:center;}
+  .contact-data .ct-name{font-weight:700;color:var(--ink);}
+  .contact-data a{color:var(--accent);text-decoration:none;font-weight:600;}
+  .contact-data a:hover{text-decoration:underline;}
+  .card-actions{margin-top:10px;}
+  .actions-toggle{border:1px solid var(--bd);background:#fff;color:var(--mut);border-radius:8px;
+    padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;}
+  .actions-toggle:hover{border-color:var(--accent);color:var(--accent);}
+  .actions-toggle[aria-expanded="true"]{border-color:var(--accent);color:var(--accent);}
+  .actions-menu{display:flex;flex-direction:column;gap:4px;margin-top:8px;padding-left:12px;border-left:2px solid var(--bd);}
+  .actions-menu[hidden]{display:none;}
+  .actions-menu button{text-align:left;border:1px solid var(--bd);background:#fff;color:var(--mut);border-radius:8px;
+    padding:7px 11px;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .actions-menu button:hover{border-color:var(--accent);color:var(--accent);}
+  .actions-menu .del:hover{border-color:#dc2626;color:#dc2626;}
+
+  h2{margin:0 0 4px;font-size:20px;letter-spacing:-.02em;}
+  .lead{margin:0 0 18px;color:var(--mut);font-size:13.5px;}
+  .dateadd{display:flex;gap:8px;}
+  .dateadd input{flex:1;}
+  .addbtn{border:1px solid var(--accent);background:#eef4fb;color:var(--accent);border-radius:9px;padding:0 14px;font-weight:600;font-size:13.5px;cursor:pointer;white-space:nowrap;}
+  .addbtn:disabled{opacity:.5;cursor:wait;}
+  .datechips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+  .timefld{display:flex;align-items:center;gap:8px;}
+  .timefld span{font-size:13px;color:var(--mut);font-weight:600;}
+  .timefld input{flex:1;}
+  .datechip{display:inline-flex;align-items:center;gap:6px;background:#eef2ff;color:var(--accent);font-size:13px;font-weight:600;padding:4px 5px 4px 11px;border-radius:99px;}
+  .datechip button{border:0;background:rgba(37,99,235,.15);color:var(--accent);width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;}
+  .datechip button:hover{background:var(--accent);color:#fff;}
+  .pickbtn{border:1px dashed var(--accent);background:#eef4fb;color:var(--accent);border-radius:9px;
+    padding:11px;font-weight:600;font-size:14px;cursor:pointer;width:100%;}
+  .pickbtn:disabled{opacity:.6;cursor:wait;}
+  .hinttext{margin:8px 0 0;font-size:12px;color:var(--mut);}
+  .submit{margin-top:6px;border:0;background:var(--brand);color:#fff;font-weight:700;font-size:15px;
+    padding:13px;border-radius:10px;cursor:pointer;width:100%;}
+  .submit:hover{background:#16314f;}
+
+  .mapcol{position:relative;min-height:300px;}
+  #map{position:absolute;inset:0;z-index:1;}
+  .mapcol.picking::after{content:"";position:absolute;inset:0;border:3px solid var(--accent);z-index:500;pointer-events:none;}
+  .map-hint{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:1000;
+    background:var(--brand);color:#fff;padding:8px 16px;border-radius:99px;font-size:13px;font-weight:600;
+    box-shadow:0 4px 14px rgba(0,0,0,.25);}
+
+  .adcol{border-left:1px solid var(--bd);background:#eef1f5;padding:14px 12px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;}
+  .ad-label{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--mut);text-transform:uppercase;text-align:center;}
+  .ad{display:block;border-radius:12px;overflow:hidden;text-decoration:none;color:#fff;
+    box-shadow:0 4px 14px rgba(0,0,0,.1);transition:transform .15s,box-shadow .15s;}
+  .ad:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.16);}
+  .ad-inner{padding:18px 14px;min-height:230px;display:flex;flex-direction:column;justify-content:space-between;}
+  .ad-1{background:linear-gradient(150deg,#1e3a5f,#2563eb);}
+  .ad-2{background:linear-gradient(150deg,#0f766e,#14b8a6);}
+  .ad-3{background:linear-gradient(150deg,#b45309,#f59e0b);}
+  .ad-kicker{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.85;}
+  .ad-head{font-size:18px;font-weight:800;line-height:1.15;margin:8px 0;letter-spacing:-.01em;}
+  .ad-body{font-size:12.5px;line-height:1.4;opacity:.92;}
+  .ad-cta{margin-top:14px;display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);
+    border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:700;text-align:center;}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);z-index:3000;
+    background:#15803d;color:#fff;padding:12px 22px;border-radius:99px;font-size:14px;font-weight:600;
+    box-shadow:0 8px 26px rgba(0,0,0,.25);opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .code-overlay{position:fixed;inset:0;z-index:4000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:20px;}
+  .code-box{background:#fff;border-radius:18px;max-width:380px;width:100%;padding:30px 26px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+  .code-check{width:54px;height:54px;border-radius:50%;background:#dcfce7;color:#15803d;font-size:28px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+  .code-box h3{margin:0 0 8px;font-size:19px;}
+  .code-box p{margin:0 0 14px;font-size:13.5px;color:var(--mut);line-height:1.5;}
+  .code-box .code-hint{font-size:12px;margin:-4px 0 16px;}
+  .code-value{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:30px;font-weight:800;letter-spacing:.18em;
+    color:var(--brand);background:#f1f5f9;border:2px dashed var(--bd);border-radius:12px;padding:14px;margin-bottom:16px;}
+  .code-box button{width:100%;border:0;background:var(--brand);color:#fff;font-weight:700;font-size:14.5px;
+    padding:12px;border-radius:10px;cursor:pointer;margin-bottom:8px;}
+  .code-box button:hover{background:#16314f;}
+  .code-box .btn-link{display:block;width:100%;box-sizing:border-box;text-align:center;text-decoration:none;
+    background:#eef4fb;color:var(--accent);font-weight:700;font-size:14.5px;padding:12px;border-radius:10px;
+    margin-bottom:8px;border:1px solid #cfe0f3;cursor:pointer;}
+  .code-box .btn-link:hover{background:#e2edf9;}
+  .code-box button.ghost{background:#fff;color:var(--mut);border:1px solid var(--bd);}
+  .code-box button.ghost:hover{background:#f8fafc;color:var(--ink);}
+
+  /* Werbespalte früh ausblenden, bevor Karte zu schmal wird */
+  @media(max-width:1180px){
+    .grid{grid-template-columns:minmax(340px,420px) 1fr;}
+    .adcol{display:none;}
+  }
+  @media(max-width:860px){
+    .grid{grid-template-columns:1fr;height:auto;}
+    .panel{border-right:0;border-bottom:1px solid var(--bd);}
+    .mapcol{height:60vh;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{transition:none!important;}
+  }
+</style>
+</head>
+<body>
+<header class="hd">
+  <div class="hd-brand">
+    <span class="hd-logo">⊕</span>
+    <div>
+      <div class="hd-name">Matchpoint</div>
+      <div class="hd-sub">Testspiele finden – einfach und unkompliziert</div>
+    </div>
+  </div>
+  <nav class="hd-tabs">
+    <button id="tab-suchen" class="on">Gegner suchen</button>
+    <button id="tab-inserieren">Gesuch aufgeben</button>
+  </nav>
+</header>
+
+<main class="grid">
+  <section class="panel">
+    <!-- Suchen -->
+    <div id="view-suchen">
+      <div class="fld">
+        <label>Sportart</label>
+        <div class="chips" id="fSport">
+          <button class="chip on" data-v="alle">Alle</button>
+          <button class="chip" data-v="fussball">⚽ Fußball</button>
+          <button class="chip" data-v="handball">🤾 Handball</button>
+          <button class="chip" data-v="basketball">🏀 Basketball</button>
+        </div>
+      </div>
+      <div class="fld">
+        <label>Geschlecht</label>
+        <div class="chips" id="fGender">
+          <button class="chip on" data-v="alle">Alle</button>
+          <button class="chip" data-v="m">Männlich</button>
+          <button class="chip" data-v="w">Weiblich</button>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="fld">
+          <label>Altersklasse</label>
+          <select id="fAge"></select>
+        </div>
+        <div class="fld">
+          <label>Ab Datum</label>
+          <input type="date" id="fFrom" />
+        </div>
+      </div>
+      <div class="fld">
+        <label>Liga</label>
+        <input type="text" id="fLeague" placeholder="z. B. Kreisliga A3" />
+      </div>
+      <div class="fld">
+        <label>Mein Standort (PLZ)</label>
+        <div class="dateadd">
+          <input type="text" id="fZip" placeholder="z. B. 71093" inputmode="numeric" maxlength="5" />
+          <button type="button" class="addbtn" id="fZipBtn">📍 Markieren</button>
+        </div>
+        <p class="hinttext" id="fZipHint" style="display:none"></p>
+      </div>
+      <div class="fld" id="radiusFld" style="display:none">
+        <label>Umkreis</label>
+        <div class="radiusrow">
+          <input type="range" id="fRadius" min="5" max="100" step="5" value="30" />
+          <span class="val" id="radiusValTxt">30 km</span>
+        </div>
+      </div>
+
+      <div class="sortrow">
+        <label for="fSort">Sortieren</label>
+        <select id="fSort">
+          <option value="date">Datum (nächste zuerst)</option>
+          <option value="dist">Entfernung</option>
+          <option value="new">Neueste zuerst</option>
+        </select>
+        <span class="count" id="count"></span>
+      </div>
+      <div class="list" id="list"></div>
+    </div>
+
+    <!-- Inserieren -->
+    <div id="view-inserieren" style="display:none">
+      <h2>Gesuch aufgeben</h2>
+      <p class="lead">Trage dein Testspiel ein. Den Spielort findest du über die Adresse – oder per Klick auf die Karte.</p>
+
+      <div class="fld">
+        <label>Verein <em id="e-club"></em></label>
+        <input id="i-club" placeholder="Vereinsname" />
+      </div>
+
+      <div class="fld">
+        <label>Sportart</label>
+        <div class="chips" id="iSport">
+          <button class="chip on" data-v="fussball">⚽ Fußball</button>
+          <button class="chip" data-v="handball">🤾 Handball</button>
+          <button class="chip" data-v="basketball">🏀 Basketball</button>
+        </div>
+      </div>
+
+      <div class="fld">
+        <label>Geschlecht</label>
+        <div class="chips" id="iGender">
+          <button class="chip on" data-v="m">Männlich</button>
+          <button class="chip" data-v="w">Weiblich</button>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="fld">
+          <label>Altersklasse</label>
+          <select id="i-age"></select>
+        </div>
+        <div class="fld">
+          <label>Liga</label>
+          <input id="i-league" placeholder="z. B. Bezirksliga Stuttgart" />
+        </div>
+      </div>
+
+      <div class="fld">
+        <label>Spielort-Art</label>
+        <div class="chips" id="iVenue">
+          <button class="chip on" data-v="heim">🏠 Heimspiel</button>
+          <button class="chip" data-v="auswaerts">✈️ Auswärtsspiel</button>
+          <button class="chip" data-v="beides">🔄 Beides möglich</button>
+        </div>
+      </div>
+
+      <div class="fld">
+        <label>Mögliche Termine <em id="e-dates"></em></label>
+        <div class="dateadd">
+          <input type="date" id="i-dateinput" />
+          <button type="button" class="addbtn" id="i-dateadd">+ Hinzufügen</button>
+        </div>
+        <div class="row2" style="margin-top:8px">
+          <div class="timefld"><span>von</span><input type="time" id="i-timefrom" /></div>
+          <div class="timefld"><span>bis</span><input type="time" id="i-timeto" /></div>
+        </div>
+        <p class="hinttext" style="margin-top:6px">Uhrzeit ist optional – ohne Angabe gilt der Termin als ganztägig flexibel.</p>
+        <div class="datechips" id="i-datechips"></div>
+      </div>
+
+      <div class="fld">
+        <label id="addr-label">Adresse des Spielorts <em id="e-loc"></em></label>
+        <p class="hinttext" id="addr-note" style="margin:0 0 8px;display:none">Bei Auswärtsspielen genügen PLZ und Ort – nur für den Kartenabgleich.</p>
+        <input id="i-street" placeholder="Straße und Hausnummer" />
+        <div class="row2" style="margin-top:8px">
+          <input id="i-zip" placeholder="PLZ" inputmode="numeric" />
+          <input id="i-place" placeholder="Ort" />
+        </div>
+        <button type="button" class="pickbtn" id="i-geocode" style="margin-top:8px">🔎 Adresse auf Karte zeigen</button>
+        <p class="hinttext" id="addr-tip">Tipp: Du kannst den Marker auch direkt per Klick auf die Karte setzen oder korrigieren.</p>
+      </div>
+
+      <div class="fld">
+        <label>Notiz</label>
+        <textarea id="i-note" rows="2" placeholder="Platzart, Uhrzeit, Besonderheiten…"></textarea>
+      </div>
+
+      <div class="fld">
+        <label>Kontaktdaten <em id="e-contact"></em></label>
+        <input id="i-name" placeholder="Name" />
+        <div class="row2" style="margin-top:8px">
+          <input id="i-email" type="email" placeholder="E-Mail" />
+          <input id="i-phone" type="tel" placeholder="Telefonnummer" />
+        </div>
+      </div>
+
+      <button class="submit" id="i-submit">Gesuch veröffentlichen</button>
+    </div>
+  </section>
+
+  <section class="mapcol" id="mapcol">
+    <div id="map"></div>
+    <div class="map-hint" id="map-hint" style="display:none">Klick auf die Karte setzt den Spielort</div>
+  </section>
+
+  <aside class="adcol">
+    <div class="ad-label">Anzeige</div>
+    <a class="ad ad-1" href="#" target="_blank" rel="noopener">
+      <div class="ad-inner">
+        <div>
+          <div class="ad-kicker">Sportplatzbedarf</div>
+          <div class="ad-head">Trikotsätze ab 24,90 €</div>
+          <div class="ad-body">Komplette Ausstattung für Verein &amp; Jugend – inkl. Flock &amp; Nummern.</div>
+        </div>
+        <span class="ad-cta">Zum Shop →</span>
+      </div>
+    </a>
+    <a class="ad ad-2" href="#" target="_blank" rel="noopener">
+      <div class="ad-inner">
+        <div>
+          <div class="ad-kicker">Versicherung</div>
+          <div class="ad-head">Vereins­haftpflicht clever absichern</div>
+          <div class="ad-body">Speziell für Sportvereine. Jetzt Tarife vergleichen.</div>
+        </div>
+        <span class="ad-cta">Mehr erfahren →</span>
+      </div>
+    </a>
+    <a class="ad ad-3" href="#" target="_blank" rel="noopener">
+      <div class="ad-inner">
+        <div>
+          <div class="ad-kicker">Reisebus</div>
+          <div class="ad-head">Mannschafts­fahrten buchen</div>
+          <div class="ad-body">Auswärtsspiele entspannt erreichen – Busse für 20–60 Plätze.</div>
+        </div>
+        <span class="ad-cta">Angebot anfragen →</span>
+      </div>
+    </a>
+  </aside>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<div class="code-overlay" id="code-overlay" style="display:none">
+  <div class="code-box">
+    <div class="code-check">✓</div>
+    <h3>Gesuch veröffentlicht</h3>
+    <p>Notiere dir diesen Bearbeitungs-Code. Du brauchst ihn, um dein Gesuch später auf einem anderen Gerät zu ändern oder zu löschen.</p>
+    <div class="code-value" id="code-value"></div>
+    <p class="code-hint">Auf diesem Gerät bleibt dein Gesuch automatisch bearbeitbar – der Code ist für andere Geräte oder einen Browserwechsel.</p>
+    <button type="button" id="code-copy">Code kopieren</button>
+    <a id="code-mail" class="btn-link" style="display:none">📧 Code per Mail senden</a>
+    <button type="button" id="code-close" class="ghost">Schließen</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+// ── Stammdaten ─────────────────────────────────────────
+const SPORTS = {fussball:{label:"Fußball",icon:"⚽"},handball:{label:"Handball",icon:"🤾"},basketball:{label:"Basketball",icon:"🏀"}};
+// sportabhängige Altersklassen
+const AGES = {
+  fussball: ["F-Jugend","E-Jugend","D-Jugend","C-Jugend","B-Jugend","A-Jugend","Aktive"],
+  handball: ["E-Jugend","D-Jugend","C-Jugend","B-Jugend","A-Jugend","Aktive"],
+  basketball: ["U10","U12","U14","U16","U18","Aktive"]
+};
+const ALL_AGES = [...new Set([].concat(...Object.values(AGES)))];
+
+const SEED = [
+  {id:1,gender:"m",club:"SpVgg Weil im Schönbuch",sport:"fussball",age:"Aktive",league:"Kreisliga A3 Stuttgart/Böblingen",dates:[{date:"2026-07-12",from:"15:00",to:"17:00"},{date:"2026-07-13",from:"",to:""}],venue:"heim",street:"Schönaicher Str. 60",zip:"71093",place:"Weil im Schönbuch",lat:48.6478,lng:9.0719,note:"Heimspiel, Rasenplatz. Anstoß flexibel.",name:"Nico (Spielleitung)",email:"spielbetrieb@spvgg-weil.de",phone:"07031 123456"},
+  {id:2,gender:"m",club:"TSV Ehningen",sport:"fussball",age:"B-Jugend",league:"Kreisstaffel",dates:[{date:"2026-07-19",from:"",to:""}],venue:"heim",street:"Am Sportzentrum 1",zip:"71139",place:"Ehningen",lat:48.6589,lng:8.9447,note:"Suchen Gegner für Saisonvorbereitung.",name:"",email:"",phone:""},
+  {id:3,gender:"m",club:"SV Magstadt",sport:"fussball",age:"Aktive",league:"Bezirksliga",dates:[{date:"2026-08-02",from:"",to:""},{date:"2026-08-09",from:"",to:""}],venue:"auswaerts",street:"",zip:"71106",place:"Magstadt",lat:48.7447,lng:8.9650,note:"Auswärts möglich, Kunstrasen vorhanden.",name:"",email:"",phone:""},
+  {id:4,gender:"w",club:"HB Böblingen",sport:"handball",age:"Aktive",league:"Landesliga",dates:[{date:"2026-08-09",from:"18:00",to:"20:00"}],venue:"heim",street:"Wolfgang-Brumme-Allee 33",zip:"71034",place:"Böblingen",lat:48.6856,lng:9.0119,note:"Halle frei am Wochenende, gerne Doppelpack mit Damen.",name:"M. Keller",email:"testspiele@hb-boeblingen.de",phone:"07031 987654"},
+  {id:5,gender:"m",club:"BBA Hagen Herrenberg",sport:"basketball",age:"U16",league:"Oberliga U16",dates:[{date:"2026-07-26",from:"",to:""},{date:"2026-08-01",from:"",to:""},{date:"2026-08-02",from:"",to:""}],venue:"heim",street:"Längenholz 5",zip:"71083",place:"Herrenberg",lat:48.5953,lng:8.8694,note:"Suchen 2–3 Testspiele vor Saisonstart.",name:"",email:"",phone:""},
+  {id:6,gender:"m",club:"FC Gärtringen",sport:"fussball",age:"A-Jugend",league:"Verbandsstaffel",dates:[{date:"2026-08-16",from:"",to:""}],venue:"auswaerts",street:"",zip:"71116",place:"Gärtringen",lat:48.6433,lng:8.9011,note:"Flutlicht vorhanden, auch unter der Woche.",name:"",email:"",phone:""}
+];
+
+// ── Persistenz ─────────────────────────────────────────
+const LS_KEY="matchpoint_listings_v1";
+function loadListings(){
+  try{ const raw=localStorage.getItem(LS_KEY); if(raw){ const d=JSON.parse(raw); if(Array.isArray(d)&&d.length) return d; } }catch(e){}
+  return SEED.slice();
+}
+function saveListings(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(listings)); }catch(e){} }
+
+// Bearbeitungs-Codes der selbst erstellten Gesuche (nur dieser Browser)
+const OWN_KEY="matchpoint_owned_v1";
+function loadOwned(){ try{ return new Set(JSON.parse(localStorage.getItem(OWN_KEY)||"[]")); }catch(e){ return new Set(); } }
+function saveOwned(){ try{ localStorage.setItem(OWN_KEY,JSON.stringify([...owned])); }catch(e){} }
+const owned=loadOwned(); // enthält IDs eigener Gesuche
+function genCode(){ const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let s=""; for(let i=0;i<6;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; }
+// prüft Berechtigung: eigenes Gesuch oder korrekter Code
+function authorize(l,actionLabel){
+  if(owned.has(l.id)) return true;
+  const input=prompt(actionLabel+"\n\nDieses Gesuch wurde mit einem anderen Gerät erstellt.\nBitte den 6-stelligen Bearbeitungs-Code eingeben:");
+  if(input===null) return false;
+  if(input.trim().toUpperCase()===l.code){ owned.add(l.id); saveOwned(); return true; }
+  alert("Code ungültig. Aktion abgebrochen.");
+  return false;
+}
+
+let listings = loadListings();
+// Codes für Bestands-/Seed-Gesuche sicherstellen
+listings.forEach(l=>{ if(!l.code) l.code=genCode(); });
+
+// ── Helfer ─────────────────────────────────────────────
+const todayISO = () => new Date().toISOString().slice(0,10);
+const fmtDate = (iso) => new Date(iso+"T00:00:00").toLocaleDateString("de-DE",{day:"2-digit",month:"short",year:"numeric"});
+const slotDate = (s) => typeof s==="string" ? s : s.date;
+function fmtSlot(s){
+  if(typeof s==="string") return fmtDate(s);
+  let t=fmtDate(s.date);
+  if(s.from&&s.to) t+=", "+s.from+"–"+s.to+" Uhr";
+  else if(s.from) t+=", ab "+s.from+" Uhr";
+  else if(s.to) t+=", bis "+s.to+" Uhr";
+  return t;
+}
+const slotKey = (s) => typeof s==="string" ? s : s.date+"|"+(s.from||"")+"|"+(s.to||"");
+const venueLabel = (v) => v==="auswaerts"?"Auswärts":v==="beides"?"Heim/Auswärts":"Heim";
+const genderLabel = (g) => g==="w"?"Weiblich":g==="m"?"Männlich":"";
+const esc = (s) => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nextDate = (l) => l.dates.map(slotDate).sort()[0] || "9999";
+function haversine(a,b){
+  const R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLng=(b.lng-a.lng)*Math.PI/180;
+  const s=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s));
+}
+
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2600);
+}
+
+// ── State ──────────────────────────────────────────────
+let tab="suchen", active=null, editId=null;
+let fSport="alle", fAge="alle", fLeague="", fFrom="", fZip="", fSort="date", fRadius=30, fGender="alle";
+let homePos=null;
+const blankForm={club:"",sport:"fussball",age:"Aktive",gender:"m",league:"",venue:"heim",street:"",zip:"",place:"",note:"",name:"",email:"",phone:""};
+const form={...blankForm};
+let dates=[], pickPos=null;
+const revealed=new Set();
+
+// ── Karte ──────────────────────────────────────────────
+const map=L.map("map").setView([48.66,9.0],11);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap",maxZoom:19}).addTo(map);
+const markerLayer=L.layerGroup().addTo(map);
+let pickMarker=null, homeMarker=null, radiusCircle=null;
+setTimeout(()=>map.invalidateSize(),200);
+
+map.on("click",(e)=>{ if(tab==="inserieren") setPick({lat:e.latlng.lat,lng:e.latlng.lng}); });
+
+function setPick(p){
+  pickPos=p;
+  if(pickMarker) map.removeLayer(pickMarker);
+  pickMarker=L.circleMarker([p.lat,p.lng],{radius:11,color:"#0f766e",weight:3,fillColor:"#14b8a6",fillOpacity:0.9}).addTo(map);
+  map.setView([p.lat,p.lng],Math.max(map.getZoom(),14));
+  document.getElementById("e-loc").textContent="";
+}
+
+function drawHome(){
+  if(homeMarker){ map.removeLayer(homeMarker); homeMarker=null; }
+  if(radiusCircle){ map.removeLayer(radiusCircle); radiusCircle=null; }
+  if(homePos){
+    homeMarker=L.marker([homePos.lat,homePos.lng],{title:"Mein Standort"}).addTo(map).bindPopup("📍 Mein Standort ("+esc(fZip)+")");
+    radiusCircle=L.circle([homePos.lat,homePos.lng],{radius:fRadius*1000,color:"#2563eb",weight:1,fillColor:"#2563eb",fillOpacity:0.06}).addTo(map);
+  }
+}
+
+function renderMarkers(items){
+  markerLayer.clearLayers();
+  items.forEach(l=>{
+    const on=active===l.id;
+    const m=L.circleMarker([l.lat,l.lng],{radius:on?12:8,color:on?"#1e3a5f":"#3b6ea5",weight:on?3:2,fillColor:on?"#2563eb":"#93b4d6",fillOpacity:0.9}).addTo(markerLayer);
+    const addr=[l.street,[l.zip,l.place].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+    m.bindPopup("<strong>"+esc(l.club)+"</strong><br>"+SPORTS[l.sport].icon+" "+esc(genderLabel(l.gender||"m"))+" · "+esc(l.age)+" · "+esc(l.league)+"<br>"+l.dates.map(fmtSlot).join("<br>")+"<br>"+esc(addr)+" · "+venueLabel(l.venue));
+    m.on("click",()=>{ active=l.id; renderList(); });
+    if(on) m.openPopup();
+  });
+  if(active!=null){ const a=items.find(x=>x.id===active); if(a) map.panTo([a.lat,a.lng]); }
+}
+
+// ── Filter, Sortierung, Liste ──────────────────────────
+function computeItems(){
+  let items=listings.filter(l=>{
+    if(fSport!=="alle"&&l.sport!==fSport) return false;
+    if(fGender!=="alle"&&(l.gender||"m")!==fGender) return false;
+    if(fAge!=="alle"&&l.age!==fAge) return false;
+    if(fLeague&&!l.league.toLowerCase().includes(fLeague.toLowerCase())) return false;
+    if(fFrom&&!l.dates.some(d=>slotDate(d)>=fFrom)) return false;
+    if(homePos){ const dist=haversine(homePos,l); if(dist>fRadius) return false; }
+    return true;
+  });
+  items=items.map(l=>({...l,_dist:homePos?haversine(homePos,l):null}));
+  if(fSort==="dist"&&homePos) items.sort((a,b)=>a._dist-b._dist);
+  else if(fSort==="new") items.sort((a,b)=>b.id-a.id);
+  else items.sort((a,b)=> nextDate(a)<nextDate(b)?-1:1);
+  return items;
+}
+
+function renderList(){
+  const items=computeItems();
+  document.getElementById("count").textContent=items.length+(items.length===1?" Treffer":" Treffer");
+  const list=document.getElementById("list");
+  list.innerHTML="";
+  if(items.length===0){
+    const hasFilter = fSport!=="alle"||fAge!=="alle"||fLeague||fFrom||homePos;
+    list.innerHTML='<div class="empty">'+(hasFilter
+      ? 'Keine Treffer für diese Filter.<br>Umkreis vergrößern oder Filter zurücksetzen.'
+      : 'Noch keine Gesuche.<br>Lege über „Gesuch aufgeben“ das erste an.')+'</div>';
+    renderMarkers(items); return;
+  }
+  items.forEach(l=>{
+    const addr=[l.street,[l.zip,l.place].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+    const vClass=l.venue==="auswaerts"?" away":l.venue==="beides"?" both":"";
+    const el=document.createElement("article");
+    el.className="card"+(active===l.id?" on":"");
+    el.tabIndex=0;
+    let html=
+      '<div class="card-top"><span class="sport-badge">'+SPORTS[l.sport].icon+'</span>'+
+      '<h3>'+esc(l.club)+'</h3>'+
+      (l._dist!=null?'<span class="dist-pill">'+l._dist.toFixed(1).replace(".",",")+' km</span>':"")+
+      '<span class="venue-pill'+vClass+'">'+venueLabel(l.venue)+'</span></div>'+
+      '<div class="dates">'+l.dates.map(d=>'<span class="date-pill">'+fmtSlot(d)+'</span>').join("")+'</div>'+
+      '<div class="meta"><span>'+esc(genderLabel(l.gender||"m"))+'</span><i>·</i><span>'+esc(l.age)+'</span><i>·</i><span>'+esc(l.league)+'</span><i>·</i><span>'+esc(addr)+'</span></div>'+
+      (l.note?'<p class="note">'+esc(l.note)+'</p>':"");
+    const hasContact=l.name||l.email||l.phone;
+    if(hasContact){
+      if(revealed.has(l.id)){
+        html+='<div class="contact"><div class="contact-data">'+
+          (l.name?'<span class="ct-name">'+esc(l.name)+'</span>':"")+
+          (l.email?'<a href="mailto:'+esc(l.email)+'">✉ '+esc(l.email)+'</a>':"")+
+          (l.phone?'<a href="tel:'+esc(l.phone.replace(/\s/g,""))+'">☎ '+esc(l.phone)+'</a>':"")+
+          '</div></div>';
+      } else {
+        html+='<div class="contact"><button type="button" class="reveal" data-reveal="'+l.id+'">Kontakt anzeigen</button></div>';
+      }
+    }
+    const mine=owned.has(l.id);
+    const lock=mine?"":" 🔒";
+    html+='<div class="card-actions">'+
+      '<button type="button" class="actions-toggle" data-toggle="'+l.id+'" aria-expanded="false">Verwalten</button>'+
+      '<div class="actions-menu" data-menu="'+l.id+'" hidden>'+
+        '<button type="button" data-edit="'+l.id+'">Bearbeiten'+lock+'</button>'+
+        '<button type="button" class="del" data-del="'+l.id+'">Löschen'+lock+'</button>'+
+      '</div></div>';
+    el.innerHTML=html;
+    el.onclick=(ev)=>{ if(ev.target.closest("button")) return; active=l.id; renderList(); };
+    el.onmouseenter=()=>{ active=l.id; renderMarkers(computeItems()); };
+    el.onkeydown=(ev)=>{ if(ev.key==="Enter"){ active=l.id; renderList(); } };
+    list.appendChild(el);
+  });
+  list.querySelectorAll("[data-reveal]").forEach(b=>b.onclick=()=>{ revealed.add(+b.dataset.reveal); renderList(); });
+  list.querySelectorAll("[data-toggle]").forEach(b=>b.onclick=()=>{
+    const menu=list.querySelector('[data-menu="'+b.dataset.toggle+'"]');
+    const open=!menu.hidden;
+    // andere offene Menüs schließen
+    list.querySelectorAll(".actions-menu").forEach(m=>m.hidden=true);
+    list.querySelectorAll(".actions-toggle").forEach(t=>t.setAttribute("aria-expanded","false"));
+    if(!open){ menu.hidden=false; b.setAttribute("aria-expanded","true"); }
+  });
+  list.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>startEdit(+b.dataset.edit));
+  list.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>delListing(+b.dataset.del));
+  renderMarkers(items);
+}
+
+function delListing(id){
+  const l=listings.find(x=>x.id===id); if(!l) return;
+  if(!authorize(l,"Gesuch löschen")) return;
+  if(!confirm("Dieses Gesuch wirklich löschen?")) return;
+  listings=listings.filter(x=>x.id!==id);
+  owned.delete(id); saveOwned();
+  saveListings();
+  if(active===id) active=null;
+  renderList();
+  toast("Gesuch gelöscht");
+}
+
+// ── Geocoding (mit Rate-Limit-Schutz) ──────────────────
+let lastGeo=0;
+async function geocode(street,zip,place){
+  const wait=1100-(Date.now()-lastGeo);
+  if(wait>0) await new Promise(r=>setTimeout(r,wait));
+  lastGeo=Date.now();
+  const q=[street,[zip,place].filter(Boolean).join(" "),"Deutschland"].filter(Boolean).join(", ");
+  const url="https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=de&q="+encodeURIComponent(q);
+  const r=await fetch(url,{headers:{"Accept-Language":"de"}});
+  const data=await r.json();
+  if(data&&data[0]) return {lat:parseFloat(data[0].lat),lng:parseFloat(data[0].lon)};
+  return null;
+}
+
+// ── Termine ────────────────────────────────────────────
+function renderDateChips(){
+  const c=document.getElementById("i-datechips"); c.innerHTML="";
+  dates.forEach(d=>{
+    const s=document.createElement("span"); s.className="datechip";
+    s.innerHTML=esc(fmtSlot(d))+' <button type="button" aria-label="Termin entfernen">×</button>';
+    s.querySelector("button").onclick=()=>{ dates=dates.filter(x=>slotKey(x)!==slotKey(d)); renderDateChips(); };
+    c.appendChild(s);
+  });
+}
+
+// ── Altersklassen-Selects befüllen ─────────────────────
+function fillAgeSelect(sel,sport,withAll,selected){
+  sel.innerHTML="";
+  if(withAll){ const o=document.createElement("option"); o.value="alle"; o.textContent="Alle"; sel.appendChild(o); }
+  const list = sport==="alle"||!sport ? ALL_AGES : AGES[sport];
+  list.forEach(a=>{ const o=document.createElement("option"); o.value=a; o.textContent=a; if(a===selected) o.selected=true; sel.appendChild(o); });
+}
+fillAgeSelect(document.getElementById("fAge"),"alle",true);
+fillAgeSelect(document.getElementById("i-age"),"fussball",false,"Aktive");
+document.getElementById("fFrom").min=todayISO();
+document.getElementById("i-dateinput").min=todayISO();
+
+// ── Tabs ───────────────────────────────────────────────
+function setTab(t){
+  tab=t;
+  document.getElementById("tab-suchen").classList.toggle("on",t==="suchen");
+  document.getElementById("tab-inserieren").classList.toggle("on",t==="inserieren");
+  document.getElementById("view-suchen").style.display=t==="suchen"?"":"none";
+  document.getElementById("view-inserieren").style.display=t==="inserieren"?"":"none";
+  document.getElementById("map-hint").style.display=t==="inserieren"?"":"none";
+  document.getElementById("mapcol").classList.toggle("picking",t==="inserieren");
+  if(t==="suchen"){ active=null; renderList(); }
+  else { renderMarkers(listings); if(pickPos) setPick(pickPos); }
+  setTimeout(()=>map.invalidateSize(),100);
+}
+document.getElementById("tab-suchen").onclick=()=>setTab("suchen");
+document.getElementById("tab-inserieren").onclick=()=>{ if(editId===null) resetForm(); setTab("inserieren"); };
+
+// ── Suchfilter ─────────────────────────────────────────
+document.getElementById("fSport").onclick=(e)=>{ const b=e.target.closest("button"); if(!b)return;
+  fSport=b.dataset.v; [...e.currentTarget.children].forEach(c=>c.classList.toggle("on",c===b));
+  fillAgeSelect(document.getElementById("fAge"),fSport,true); fAge="alle"; renderList(); };
+document.getElementById("fAge").onchange=(e)=>{ fAge=e.target.value; renderList(); };
+document.getElementById("fGender").onclick=(e)=>{ const b=e.target.closest("button"); if(!b)return;
+  fGender=b.dataset.v; [...e.currentTarget.children].forEach(c=>c.classList.toggle("on",c===b)); renderList(); };
+document.getElementById("fFrom").onchange=(e)=>{ fFrom=e.target.value; renderList(); };
+document.getElementById("fLeague").oninput=(e)=>{ fLeague=e.target.value; renderList(); };
+document.getElementById("fSort").onchange=(e)=>{ fSort=e.target.value; renderList(); };
+document.getElementById("fRadius").oninput=(e)=>{ fRadius=+e.target.value;
+  document.getElementById("radiusValTxt").textContent=fRadius+" km"; drawHome(); renderList(); };
+
+document.getElementById("fZip").oninput=(e)=>{ fZip=e.target.value.replace(/\D/g,"").slice(0,5); e.target.value=fZip; };
+document.getElementById("fZipBtn").onclick=async ()=>{
+  const hint=document.getElementById("fZipHint"), btn=document.getElementById("fZipBtn");
+  if(!fZip||fZip.length<4){ hint.style.display=""; hint.textContent="Bitte eine gültige PLZ eingeben."; return; }
+  btn.disabled=true; const old=btn.textContent; btn.textContent="Suche…";
+  try{
+    const res=await geocode("",fZip,"");
+    if(res){
+      homePos=res; drawHome();
+      map.setView([res.lat,res.lng],11);
+      document.getElementById("radiusFld").style.display="";
+      hint.style.display=""; hint.textContent="Standort gesetzt – Umkreissuche aktiv.";
+      renderList();
+    } else { hint.style.display=""; hint.textContent="PLZ nicht gefunden."; }
+  }catch{ hint.style.display=""; hint.textContent="Fehler bei der Standortsuche (Dienst evtl. blockiert)."; }
+  btn.disabled=false; btn.textContent=old;
+};
+
+// ── Inserier-Formular ──────────────────────────────────
+document.getElementById("i-club").oninput=(e)=>form.club=e.target.value;
+document.getElementById("i-age").onchange=(e)=>form.age=e.target.value;
+document.getElementById("i-league").oninput=(e)=>form.league=e.target.value;
+document.getElementById("i-note").oninput=(e)=>form.note=e.target.value;
+document.getElementById("i-name").oninput=(e)=>form.name=e.target.value;
+document.getElementById("i-email").oninput=(e)=>form.email=e.target.value;
+document.getElementById("i-phone").oninput=(e)=>form.phone=e.target.value;
+["i-street","i-zip","i-place"].forEach(id=>{
+  document.getElementById(id).oninput=(e)=>{ form[id.replace("i-","")]=e.target.value; };
+});
+
+document.getElementById("iSport").onclick=(e)=>{ const b=e.target.closest("button"); if(!b)return;
+  form.sport=b.dataset.v; [...e.currentTarget.children].forEach(c=>c.classList.toggle("on",c===b));
+  const valid=AGES[form.sport]; if(!valid.includes(form.age)){ form.age=valid[valid.length-1]; }
+  fillAgeSelect(document.getElementById("i-age"),form.sport,false,form.age); };
+
+document.getElementById("iVenue").onclick=(e)=>{ const b=e.target.closest("button"); if(!b)return;
+  form.venue=b.dataset.v; [...e.currentTarget.children].forEach(c=>c.classList.toggle("on",c===b)); applyVenueFields(); };
+
+document.getElementById("iGender").onclick=(e)=>{ const b=e.target.closest("button"); if(!b)return;
+  form.gender=b.dataset.v; [...e.currentTarget.children].forEach(c=>c.classList.toggle("on",c===b)); };
+
+function applyVenueFields(){
+  const away=form.venue==="auswaerts";
+  document.getElementById("i-street").style.display=away?"none":"";
+  document.getElementById("addr-label").firstChild.textContent=away?"Spielort (nur PLZ & Ort) ":"Adresse des Spielorts ";
+  document.getElementById("addr-note").style.display=away?"":"none";
+}
+applyVenueFields();
+
+document.getElementById("i-dateadd").onclick=()=>{
+  const v=document.getElementById("i-dateinput").value;
+  if(!v){ document.getElementById("e-dates").textContent="Bitte zuerst ein Datum wählen"; return; }
+  const from=document.getElementById("i-timefrom").value, to=document.getElementById("i-timeto").value;
+  if(from&&to&&to<=from){ document.getElementById("e-dates").textContent="„bis“ muss nach „von“ liegen"; return; }
+  const slot={date:v,from:from||"",to:to||""};
+  if(dates.some(x=>slotKey(x)===slotKey(slot))) return;
+  dates.push(slot); dates.sort((a,b)=>slotKey(a)<slotKey(b)?-1:1);
+  renderDateChips();
+  document.getElementById("e-dates").textContent="";
+  document.getElementById("i-dateinput").value="";
+  document.getElementById("i-timefrom").value="";
+  document.getElementById("i-timeto").value="";
+};
+
+document.getElementById("i-geocode").onclick=async ()=>{
+  const btn=document.getElementById("i-geocode");
+  if(!form.street.trim()&&!form.zip.trim()&&!form.place.trim()){ document.getElementById("e-loc").textContent="Bitte zuerst eine Adresse eingeben"; return; }
+  btn.disabled=true; btn.textContent="Suche Adresse…";
+  try{
+    const res=await geocode(form.street,form.zip,form.place);
+    if(res){ setPick(res); btn.textContent="✓ Auf Karte gefunden – ggf. Marker verschieben"; }
+    else { btn.textContent="✗ Nicht gefunden – Karte nutzen oder Eingabe prüfen"; }
+  }catch{ btn.textContent="✗ Fehler – bitte Karte nutzen"; }
+  btn.disabled=false;
+};
+
+// ── Edit / Reset ───────────────────────────────────────
+function startEdit(id){
+  const l=listings.find(x=>x.id===id); if(!l) return;
+  if(!authorize(l,"Gesuch bearbeiten")) return;
+  editId=id;
+  Object.assign(form,{club:l.club,sport:l.sport,age:l.age,gender:l.gender||"m",league:l.league==="—"?"":l.league,venue:l.venue,street:l.street||"",zip:l.zip||"",place:l.place&&l.place!=="Markierter Ort"?l.place:"",note:l.note||"",name:l.name||"",email:l.email||"",phone:l.phone||""});
+  dates=l.dates.map(d=> typeof d==="string"?{date:d,from:"",to:""}:{...d});
+  pickPos={lat:l.lat,lng:l.lng};
+  document.getElementById("i-club").value=form.club;
+  document.getElementById("i-league").value=form.league;
+  document.getElementById("i-note").value=form.note;
+  document.getElementById("i-street").value=form.street;
+  document.getElementById("i-zip").value=form.zip;
+  document.getElementById("i-place").value=form.place;
+  document.getElementById("i-name").value=form.name;
+  document.getElementById("i-email").value=form.email;
+  document.getElementById("i-phone").value=form.phone;
+  document.querySelectorAll("#iSport button").forEach(b=>b.classList.toggle("on",b.dataset.v===form.sport));
+  document.querySelectorAll("#iGender button").forEach(b=>b.classList.toggle("on",b.dataset.v===form.gender));
+  document.querySelectorAll("#iVenue button").forEach(b=>b.classList.toggle("on",b.dataset.v===form.venue));
+  fillAgeSelect(document.getElementById("i-age"),form.sport,false,form.age);
+  applyVenueFields(); renderDateChips();
+  document.getElementById("i-submit").textContent="Änderungen speichern";
+  setTab("inserieren"); setPick(pickPos);
+}
+
+function resetForm(){
+  editId=null;
+  Object.assign(form,blankForm);
+  dates=[]; pickPos=null;
+  if(pickMarker){ map.removeLayer(pickMarker); pickMarker=null; }
+  ["i-club","i-league","i-note","i-street","i-zip","i-place","i-name","i-email","i-phone","i-timefrom","i-timeto","i-dateinput"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("i-geocode").textContent="🔎 Adresse auf Karte zeigen";
+  document.querySelectorAll("#iSport button").forEach((b,i)=>b.classList.toggle("on",i===0));
+  document.querySelectorAll("#iGender button").forEach((b,i)=>b.classList.toggle("on",i===0));
+  document.querySelectorAll("#iVenue button").forEach((b,i)=>b.classList.toggle("on",i===0));
+  fillAgeSelect(document.getElementById("i-age"),"fussball",false,"Aktive");
+  applyVenueFields(); renderDateChips();
+  document.getElementById("i-submit").textContent="Gesuch veröffentlichen";
+  ["e-club","e-dates","e-loc","e-contact"].forEach(id=>document.getElementById(id).textContent="");
+}
+
+// ── Submit ─────────────────────────────────────────────
+document.getElementById("i-submit").onclick=async ()=>{
+  ["e-club","e-dates","e-loc","e-contact"].forEach(id=>document.getElementById(id).textContent="");
+  let ok=true;
+  if(!form.club.trim()){ document.getElementById("e-club").textContent="Bitte Vereinsname angeben"; ok=false; }
+  if(dates.length===0){ document.getElementById("e-dates").textContent="Mindestens ein Datum hinzufügen"; ok=false; }
+  let coords=pickPos;
+  if(!coords&&(form.street.trim()||form.zip.trim()||form.place.trim())){
+    coords=await geocode(form.street,form.zip,form.place).catch(()=>null);
+  }
+  if(!coords){ document.getElementById("e-loc").textContent="Adresse + „Auf Karte zeigen“ oder Ort auf Karte setzen"; ok=false; }
+  if(!form.name.trim()){ document.getElementById("e-contact").textContent="Bitte Ansprechpartner angeben"; ok=false; }
+  else if(!form.email.trim()&&!form.phone.trim()){ document.getElementById("e-contact").textContent="E-Mail oder Telefon angeben"; ok=false; }
+  else if(form.email.trim()&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())){ document.getElementById("e-contact").textContent="E-Mail-Adresse prüfen"; ok=false; }
+  if(!ok) return;
+  const data={club:form.club.trim(),sport:form.sport,age:form.age,gender:form.gender,league:form.league.trim()||"—",
+    venue:form.venue,street:form.street.trim(),zip:form.zip.trim(),place:form.place.trim()||"Markierter Ort",
+    note:form.note.trim(),dates:dates.map(d=>({...d})),lat:coords.lat,lng:coords.lng,
+    name:form.name.trim(),email:form.email.trim(),phone:form.phone.trim()};
+  if(editId!==null){
+    const i=listings.findIndex(l=>l.id===editId);
+    listings[i]={...listings[i],...data};
+    active=editId; toast("Änderungen gespeichert");
+    saveListings(); resetForm(); setTab("suchen");
+  } else {
+    const code=genCode();
+    const item={id:Date.now(),...data,code:code}; listings.unshift(item);
+    owned.add(item.id); saveOwned();
+    active=item.id;
+    saveListings(); resetForm(); setTab("suchen");
+    showCode(code, data.email, data.club);
+  }
+};
+
+// Bearbeitungs-Code nach dem Erstellen prominent zeigen
+function showCode(code, email, club){
+  const ov=document.getElementById("code-overlay");
+  document.getElementById("code-value").textContent=code;
+  const mailBtn=document.getElementById("code-mail");
+  if(email){
+    const subj="Dein Matchpoint Bearbeitungs-Code";
+    const body="Hallo,\n\ndein Gesuch"+(club?" für "+club:"")+" wurde auf Matchpoint veröffentlicht.\n\nDein Bearbeitungs-Code lautet: "+code+"\n\nMit diesem Code kannst du dein Gesuch später auf einem anderen Gerät ändern oder löschen. Bitte gut aufbewahren.\n\nViele Grüße\nMatchpoint";
+    mailBtn.href="mailto:"+encodeURIComponent(email)+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
+    mailBtn.style.display="";
+  } else {
+    mailBtn.style.display="none";
+  }
+  ov.style.display="flex";
+}
+
+document.getElementById("code-close").onclick=()=>{ document.getElementById("code-overlay").style.display="none"; };
+document.getElementById("code-copy").onclick=()=>{
+  const code=document.getElementById("code-value").textContent;
+  if(navigator.clipboard){ navigator.clipboard.writeText(code).then(()=>toast("Code kopiert")).catch(()=>{}); }
+};
+
+// Start
+renderList();
+</script>
+</body>
+</html>
